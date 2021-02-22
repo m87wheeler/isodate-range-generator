@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
-// get ISO week number from date
-// week start Sunday set by if (currentDay === 0)
+// ? get ISO week number from date
+// ? week start Sunday set by if (currentDay === 0)
 const isoWeekFromDate = (date = new Date()) => {
   date = new Date(date);
   date.setHours(0, 0, 0, 0);
@@ -24,7 +24,7 @@ const isoWeekFromDate = (date = new Date()) => {
 };
 
 // ? get the unix date for the week start date from a week number (1 - 53)
-export const weekFromNumber = (week = 1, year) => {
+const weekFromNumber = (week = 1, year) => {
   let date = new Date();
   if (year) date.setYear(year);
   let week1 = new Date(date.getFullYear(), 0, 4);
@@ -37,7 +37,7 @@ export const weekFromNumber = (week = 1, year) => {
 // ? sun - sat range for provided number of weeks
 // ? * date = a date in the most recent week to assign
 // ? what week to calculate range back from
-export const getWeeksRange = (weeks = 2, date = new Date()) => {
+const getWeeksRange = (weeks = 1, date = new Date()) => {
   const d = new Date(date);
   const currentDay = d.getDay();
   const sundayUnix = d.setDate(d.getDate() - currentDay);
@@ -54,41 +54,66 @@ export const getWeeksRange = (weeks = 2, date = new Date()) => {
     from: new Date(from).getTime(),
     fromString: new Date(from).toString(),
     to: new Date(setTo).getTime(),
-    toString: new Date(setTo).toString(),
+    toString: new Date(setTo).toString()
   };
 };
 
-// get previous year value
+// ? get previous year value
+const currentDate = new Date();
 const currentYear = new Date().getFullYear();
-const previousYear = currentYear - 1;
+// const previousYear = currentYear - 1;
+const previousPeriod = (date = new Date(), daysAg0 = 7) => {
+  let dt = new Date(date);
+  dt.setDate(dt.getDate() - daysAg0);
+  return dt;
+};
 
+// *** hook ***
 export const useYearOnYearDateRanges = (
   weeks = 1,
-  date = new Date(),
+  date = currentDate,
   year = currentYear
 ) => {
   // eslint-disable-next-line
   const [parameters, setParameters] = useState({
     weeks,
-    date,
-    year,
+    date: new Date(date),
+    prevDate: previousPeriod(date),
+    year
   });
-  const [currentDateRange, setCurrentDateRange] = useState({});
-  const [previousDateRange, setPreviousDateRange] = useState({});
+  const [period, setPeriod] = useState({
+    current: {},
+    previous: {},
+    lastYear: {}
+  });
 
+  /** log changes */
   useEffect(() => {
-    console.log();
-    const current = getWeeksRange(
-      parameters.weeks,
+    const currentPeriod = getWeeksRange(
+      weeks,
       weekFromNumber(isoWeekFromDate(parameters.date), parameters.year)
     );
-    const previous = getWeeksRange(
-      parameters.weeks,
-      weekFromNumber(isoWeekFromDate(parameters.date), previousYear)
+    setPeriod((period) => ({
+      ...period,
+      current: currentPeriod
+    }));
+    const previousPeriod = getWeeksRange(
+      weeks,
+      weekFromNumber(isoWeekFromDate(parameters.prevDate), parameters.year)
     );
-    setCurrentDateRange(current);
-    setPreviousDateRange(previous);
-  }, [parameters]);
+    setPeriod((period) => ({
+      ...period,
+      previous: previousPeriod
+    }));
+    const lyPeriod = getWeeksRange(
+      weeks,
+      weekFromNumber(isoWeekFromDate(parameters.date), parameters.year - 1)
+    );
+    setPeriod((period) => ({
+      ...period,
+      lastYear: lyPeriod
+    }));
+  }, [weeks, parameters]);
 
-  return { current: currentDateRange, previous: previousDateRange };
+  return period;
 };
