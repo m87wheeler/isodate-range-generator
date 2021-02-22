@@ -82,16 +82,18 @@ export const useYearOnYearDateRanges = (
     year
   });
   const [period, setPeriod] = useState({
+    week: "",
     current: {},
     previous: {},
     lastYear: {}
   });
 
-  /** log changes */
   useEffect(() => {
+    const week = isoWeekFromDate(parameters.date);
+    setPeriod((period) => ({ ...period, week }));
     const currentPeriod = getWeeksRange(
       weeks,
-      weekFromNumber(isoWeekFromDate(parameters.date), parameters.year)
+      weekFromNumber(week, parameters.year)
     );
     setPeriod((period) => ({
       ...period,
@@ -107,7 +109,7 @@ export const useYearOnYearDateRanges = (
     }));
     const lyPeriod = getWeeksRange(
       weeks,
-      weekFromNumber(isoWeekFromDate(parameters.date), parameters.year - 1)
+      weekFromNumber(week, parameters.year - 1)
     );
     setPeriod((period) => ({
       ...period,
