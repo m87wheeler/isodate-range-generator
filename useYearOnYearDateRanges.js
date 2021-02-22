@@ -68,19 +68,16 @@ const previousPeriod = (date = new Date(), daysAg0 = 7) => {
   return dt;
 };
 
+// ************
 // *** hook ***
+// ************
 export const useYearOnYearDateRanges = (
   weeks = 1,
   date = currentDate,
   year = currentYear
 ) => {
   // eslint-disable-next-line
-  const [parameters, setParameters] = useState({
-    weeks,
-    date: new Date(date),
-    prevDate: previousPeriod(date),
-    year
-  });
+  const [parameters, setParameters] = useState({});
   const [period, setPeriod] = useState({
     week: "",
     current: {},
@@ -88,6 +85,17 @@ export const useYearOnYearDateRanges = (
     lastYear: {}
   });
 
+  /** set parameters state */
+  useEffect(() => {
+    setParameters({
+      weeks,
+      date: new Date(date),
+      prevDate: previousPeriod(date),
+      year
+    });
+  }, [date, weeks, year]);
+
+  /** set period state */
   useEffect(() => {
     const week = isoWeekFromDate(parameters.date);
     setPeriod((period) => ({ ...period, week }));
@@ -117,5 +125,8 @@ export const useYearOnYearDateRanges = (
     }));
   }, [weeks, parameters]);
 
+  useEffect(() => {
+    console.log(period);
+  }, [period]);
   return period;
 };
